@@ -1,9 +1,10 @@
 <div align="center">
+
   # IdM - Instrument Management System
    
   ![Python](https://img.shields.io/badge/Python-3.13-007BC0?style=flat&logo=python&logoColor=white)
   ![CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter-blue?style=flat)
-  ![Excel](https://img.shields.io/badge/Database-Excel_xlsx-green?logo=microsoftexcel)
+  ![Excel](https://img.shields.io/badge/Database-Excel-green?logo=microsoftexcel)
   ![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=flat)
 
   **A professional, industrial-grade interface for tracking, validating, and managing measurement instrument lifecycles within the ETS department.**
@@ -80,5 +81,6 @@ python idmV2.py
 
 [![LinkedIn](https://img.shields.io/badge/Connect-LinkedIn-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/nscunha/)
 [![GitHub](https://img.shields.io/badge/Follow-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/cunhanina)
+
 
 </div>
