@@ -30,9 +30,10 @@ from idm.ui.theme import (
 )
 from idm.validators import parse_and_validate_kw
 
+import sys
 ctk.set_appearance_mode("light")
 
-PAGE_SIZE = 25
+PAGE_SIZE = 10
 
 
 class MeasurementApp(ctk.CTk):
@@ -40,6 +41,7 @@ class MeasurementApp(ctk.CTk):
 
     def __init__(self, file_path: Union[str, Path] = "Instrumentos de medição.xlsx") -> None:
         super().__init__()
+        ctk.set_appearance_mode("light")
 
         self.repo = InstrumentRepository(file_path=file_path)
         self.all_instruments: List[Instrument] = []
@@ -55,15 +57,26 @@ class MeasurementApp(ctk.CTk):
         self.current_status_filter: str = "all"
         self.current_page: int = 1
 
-        self.geometry("1220x920")
-        self.minsize(1020, 720)
+        self.geometry("1200x860")
+        self.minsize(980, 680)
         self.configure(fg_color=LIGHT_BG)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
         self._reload_database()
+        self.after(50, self._initial_build)
+
+    def _initial_build(self) -> None:
+        """Build UI after window enters mainloop so macOS Cocoa paints the buffer properly."""
         self._build_ui()
+        if sys.platform == "darwin":
+            self.update_idletasks()
+            w, h = self.winfo_width(), self.winfo_height()
+            if w > 100 and h > 100:
+                self.geometry(f"{w + 1}x{h}")
+                self.update_idletasks()
+                self.geometry(f"{w}x{h}")
 
     def _reload_database(self) -> None:
         """Load instruments, sheets, and unique locations from the Excel repository."""

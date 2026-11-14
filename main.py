@@ -1,8 +1,12 @@
 """Main entry point for the IdM - Instrument Management System."""
 
 import argparse
+import os
 from pathlib import Path
 import sys
+
+# Silence macOS system Tk 8.5 deprecation notice
+os.environ.setdefault("TK_SILENCE_DEPRECATION", "1")
 
 from idm.i18n import set_language
 from idm.repository import InstrumentRepository
@@ -59,6 +63,15 @@ def main(argv=None) -> int:
         out = repo.export_to_csv(instruments, args.export)
         print(f"Exported {len(instruments)} instruments to {out}")
         return 0
+
+    import tkinter as tk
+    if sys.platform == "darwin" and getattr(tk, "TkVersion", 8.6) < 8.6:
+        print(
+            "\n[!] AVISO macOS: Você está executando com o Python do sistema da Apple (Tcl/Tk 8.5 antigo),\n"
+            "    que possui um bug conhecido de tela preta/cinza no macOS recente.\n"
+            "    Se a janela ficar escura, use o Python 3.11+ do python.org ou Homebrew:\n"
+            "      brew install python-tk\n"
+        )
 
     from idm.ui.app import MeasurementApp
 
