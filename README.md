@@ -1,75 +1,107 @@
 <div align="center">
 
-  # IdM - Instrument Management System
-   
-  ![Python](https://img.shields.io/badge/Python-3.13-007BC0?style=flat&logo=python&logoColor=white)
-  ![CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter-blue?style=flat)
-  ![Excel](https://img.shields.io/badge/Database-Excel-green?logo=microsoftexcel)
-  ![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=flat)
+  # IdM - Instrument Management System (v3.1)
 
-  **A professional, industrial-grade interface for tracking, validating, and managing measurement instrument lifecycles within the ETS department.**
+  ![Python](https://img.shields.io/badge/Python-3.11+-007BC0?style=flat&logo=python&logoColor=white)
+  ![CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter-blue?style=flat)
+  ![Excel](https://img.shields.io/badge/Database-Excel_(.xlsx)-217346?logo=microsoftexcel&logoColor=white)
+  ![Tests](https://img.shields.io/badge/Tests-Pytest_Passing-success?style=flat&logo=pytest)
+  ![I18n](https://img.shields.io/badge/Language-PT--BR_%7C_EN-informational?style=flat)
+
+  **An industrial-grade metrology dashboard for tracking, validating, and auditing measurement instrument lifecycles (`KW` calibration windows) on the manufacturing shop floor.**
 </div>
 
 ---
 
 ## 📖 Executive Summary
 
-The **IdM (Instrumentos de Medição) System** is a mission-critical tool designed to replace manual spreadsheet editing with a robust, error-resistant digital interface. In high-precision manufacturing, ensuring that instruments are within their calibration window (**KW**) is vital for quality compliance. 
+The **IdM (Instrumentos de Medição) System** is a quality-compliance desktop application designed to replace manual, error-prone spreadsheet editing in precision manufacturing and technical training environments (**ETS**).
 
-**The Problem:** Direct Excel editing often leads to broken formulas, inconsistent date formatting (KW), and accidental data loss during row migration between "Active" and "Lost" sheets.
-
-**The Solution:** A centralized dashboard that acts as a "Validation Layer." It allows apprentices to search, relocate, and update instrument status via a modern UI that enforces strict formatting rules and automates row transfers.
-
----
-
-## ✨ Capabilities
-
-* **🔍 Flexible "Fuzzy" Search:** Find instruments by **Name**, **Norm**, or **KW**. The intelligent search engine strips special characters, allowing you to find `03/25` just by typing `0325`.
-* **🏷️ Dynamic Sheet Migration:** Each instrument card features a built-in **Location Dropdown**. Changing the location (e.g., from *Geral* to *Perdidos*) automatically moves the row in the Excel database and cleans up the source sheet.
-* **📅 Automated Auditing:** Every KW update triggers an automatic timestamping process, recording the exact second the change was made for audit trail purposes.
-* **🛡️ Format Protection:** Includes a **Regex Validation Engine** that checks entries before they hit the database. If a user enters an impossible date or wrong format, the system blocks the command and issues a visual warning.
-* **🎨 Bosch Design System:** Built with a clean "Light Mode" aesthetic using **CustomTkinter** to ensure brand compliance and professional scannability.
-
-## 🛠 Tech Stack
-| Component | Technology | Description |
-| :--- | :--- | :--- |
-| **Core** | Python 3.13 | Application logic and string normalization |
-| **UI Framework** | CustomTkinter | Modernized, Bosch-blue themed interface |
-| **Data Engine** | Openpyxl | Direct XML-based Excel manipulation |
-| **Validation** | Regex (re) | WW/YY format enforcement |
-| **Normalization** | Unidecode | Accented character handling for search |
+* **The Problem:** Direct shop-floor editing of shared Excel files leads to malformed Calendar Week (`KW`) dates (e.g., invalid week numbers or inconsistent separators), lost checkout/return timestamps, and accidental data loss when moving instruments between *Active* (`Geral`), *Lost* (`Perdidos`), and *Scrapped* (`Sucateados`) worksheets.
+* **The Solution:** A clean, modular validation and lifecycle management layer built with **Python** and **CustomTkinter** over the existing `.xlsx` workbook. It enforces ISO 8601 week rules (`WW/YY`), calculates real-time calibration expiration KPIs, automates cross-sheet row migration, and records an immutable audit trail (`Audit_Log`).
 
 ---
 
-## 📂 Project Structure
+## ✨ Key Features
+
+* **📊 Real-Time Calibration KPI Dashboard:** Automatically compares each instrument's `KW` (`WW/YY`) against the current ISO calendar week to classify the inventory into interactive KPI cards:
+  * 🟢 **Calibrated (Valid):** More than 4 weeks remaining.
+  * 🟡 **Due Soon:** Expiring within `≤ 4` weeks.
+  * 🔴 **Expired (Overdue):** Past calibration `KW`.
+  * 🟣 **In Calibration / Missing KW:** Checked out for calibration (`DATA DE RETIRADA`) or awaiting initial `KW`.
+  * ⚪ **Inactive:** Located in `Perdidos` (Lost) or `Sucateados` (Scrapped).
+* **🔍 Unified & Multi-Faceted Fuzzy Search:** Search across **Name**, **Norm/Serial**, **Physical Location** (`ARMÁRIO 35`, `CNC 42`, `BANCADA 1`), **Brand** (`MITUTOYO`, `STARRETT`, `MAHR`), and **KW** simultaneously. Automatically strips accents (`Paquímetro` $\leftrightarrow$ `paquimetro`), normalizes serial whitespace, and matches compact `KW` digits (`0327` $\leftrightarrow$ `03/27`).
+* **🛡️ Strict ISO Calendar Week (`KW`) Validation:** Blocks invalid week entries (such as `00/27`, `54/27`, or `53/25` in 52-week years) before they touch the database, canonicalizing valid inputs (`3/27` or `0327` $\rightarrow$ `03/27`).
+* **🔄 Complete Instrument Lifecycle (CRUD + Checkout/Return):**
+  * **Check Out (`Registrar Retirada`):** Stamps `DATA DE RETIRADA` when sending an instrument to the metrology lab.
+  * **Update KW & Return (`Atualizar KW`):** Validates the new `KW` and automatically stamps `DATA DE RETORNO`.
+  * **Dynamic Sheet Migration:** Moving an instrument's dropdown tag between `Geral`, `Perdidos`, and `Sucateados` transfers the record and cleans up the source sheet.
+  * **Create & Edit Modals:** Register new instruments or edit physical locations, brands, and serial norms in place.
+* **📋 Automated Audit Trail (`Audit_Log`):** Every `CREATE`, `EDIT`, `CHECKOUT`, `UPDATE_KW`, and `MOVE_SHEET` operation is logged with a timestamp, old value, and new value in a dedicated `Audit_Log` worksheet viewable directly from the UI.
+* **🌐 Bilingual Interface (`PT-BR` | `EN`) & CSV Export:** One-click live toggle between Portuguese and English, plus filtered CSV report export.
+
+---
+
+## 🏗 Project Architecture
+
 ```text
 IdM/
-├── Instrumentos de medição.xlsx # The central database file
-└── idmV2.py                 # Main Application Source
+├── idm/                          # Core application package
+│   ├── __init__.py
+│   ├── i18n.py                   # Bilingual (PT-BR / EN) translation dictionary & state
+│   ├── models.py                 # Typed dataclasses: Instrument, AuditEntry, DashboardStats, CalibrationStatus
+│   ├── validators.py             # ISO calendar week (KW) math, regex validation & string normalization
+│   ├── repository.py             # Excel (.xlsx) CRUD repository, sheet migration & Audit_Log writer
+│   └── ui/                       # CustomTkinter UI components
+│       ├── theme.py              # Bosch Digital Design System palette & status badge styling
+│       ├── dialogs.py            # Modal dialogs for New/Edit Instrument & Audit Trail history
+│       └── app.py                # Main window with KPI cards, multi-filter bar & paginated cards
+├── tests/                        # Automated Pytest suite
+│   ├── test_validators.py        # Unit tests for ISO week math, KW bounds & normalization
+│   └── test_repository.py        # Integration tests for Excel CRUD, sheet transfers & Audit_Log
+├── Instrumentos de medição.xlsx  # Standardized Excel database (Geral, Perdidos, Sucateados, Audit_Log)
+├── main.py                       # Main CLI & GUI entry point
+├── idmV2.py                      # Legacy entry point (backward-compatible wrapper)
+└── requirements.txt              # Project dependencies
 ```
 
 ---
 
 ## 🚀 Quick Start
 
+### 1. Clone & Install Dependencies
+
 ```bash
-# 1. Clone the repository
-git clone [https://github.com/cunhanina/IdM.git](https://github.com/cunhanina/IdM.git)
+git clone https://github.com/cunhanina/IdM.git
 cd IdM
 
-# 3. Launch the Manager
-python idmV2.py
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
----
+### 2. Launch the Desktop Application
 
-## 🧠 System Logic
-1.  **Normalization Pass:** When a user searches, the query is passed through `unidecode` and `re.sub`. This ensures that "Padrão" matches "padrao" and "03/25" matches "0325".
-2.  **Migration Pipeline:**
-    * **Step 1:** The system reads the entire row from the source sheet.
-    * **Step 2:** It appends the data to the target sheet's first empty row.
-    * **Step 3:** It executes a `delete_rows` command on the source to prevent duplicates.
-3.  **Validation Loop:** The KW input is filtered through a pattern `^[0-9]{2}/[0-9]{2}$`. Only valid strings are passed to the database setter.
+```bash
+# Launch in Portuguese (default)
+python main.py
+
+# Or launch directly in English
+python main.py --lang en
+```
+
+### 3. CLI Reporting & Automated Tests
+
+```bash
+# Print live KPI calibration statistics to the terminal (headless)
+python main.py --stats
+
+# Export full inventory report to CSV from the command line
+python main.py --export relatorio_idm.csv
+
+# Run the automated test suite
+pytest -v
+```
 
 ---
 
@@ -81,6 +113,5 @@ python idmV2.py
 
 [![LinkedIn](https://img.shields.io/badge/Connect-LinkedIn-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/nscunha/)
 [![GitHub](https://img.shields.io/badge/Follow-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/cunhanina)
-
 
 </div>
